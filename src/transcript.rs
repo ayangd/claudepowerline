@@ -85,9 +85,9 @@ fn response_stats(latencies: &[i64]) -> Option<ResponseStats> {
     })
 }
 
-/// Parse the transcript JSONL once and derive every time stat. Mirrors
-/// statusline.nu for elapsed/last-msg (only `user`/`assistant` entries with a
-/// parseable timestamp count) and adds the response-latency stats.
+/// Parse the transcript JSONL once and derive every time stat. Elapsed/last-msg
+/// use only `user`/`assistant` entries with a parseable timestamp; plus the
+/// response-latency stats.
 pub(crate) fn transcript_stats(transcript_path: Option<&str>) -> TranscriptStats {
     let Some(path) = transcript_path.filter(|p| !p.is_empty()) else {
         return TranscriptStats::empty();

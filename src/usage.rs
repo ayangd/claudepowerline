@@ -21,7 +21,7 @@ struct UsageWindow {
 }
 
 /// On-disk usage cache: utilization percentages + raw reset timestamps — never
-/// the token. Mirrors the keys statusline.nu writes.
+/// the token.
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct UsageCache {
     five_hour_pct: f64,

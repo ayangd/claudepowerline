@@ -2,8 +2,7 @@
 
 use chrono::{DateTime, Utc};
 
-/// Uppercase the first character and lowercase the rest, matching Nushell's
-/// `str capitalize`.
+/// Uppercase the first character and lowercase the rest.
 fn capitalize(s: &str) -> String {
     let mut chars = s.chars();
     match chars.next() {
@@ -43,8 +42,8 @@ fn cwd_candidate(parts: &[&str], head: usize, tail: usize) -> String {
 }
 
 /// Replace `$HOME` with `~`, then middle-truncate with `…` until the path fits
-/// within `max` characters. Faithful port of the `statusline.nu` cwd logic:
-/// grow the visible head/tail one step past the limit, then back off once.
+/// within `max` characters: grow the visible head/tail one step past the limit,
+/// then back off once.
 pub(crate) fn shorten_cwd(raw_cwd: &str, home: &str, max: usize) -> String {
     let mut cwd = if home.is_empty() {
         raw_cwd.to_string()
@@ -80,8 +79,8 @@ pub(crate) fn shorten_cwd(raw_cwd: &str, home: &str, max: usize) -> String {
     cwd
 }
 
-/// Middle-truncate a branch name to 20 chars (`first10…last9`), matching the
-/// Nushell `str substring` (inclusive-range) behaviour.
+/// Middle-truncate a branch name to 20 chars (`first10…last9`); the head slice
+/// uses an inclusive range.
 pub(crate) fn truncate_branch(branch: String) -> String {
     const MAX: usize = 20;
     let chars: Vec<char> = branch.chars().collect();
@@ -96,8 +95,7 @@ pub(crate) fn truncate_branch(branch: String) -> String {
     format!("{first}…{last}")
 }
 
-/// Bucket a duration in seconds into `Hh Mm` / `Mm Ss` / `Ss`, matching the
-/// statusline.nu elapsed-time format.
+/// Bucket a duration in seconds into `Hh Mm` / `Mm Ss` / `Ss`.
 pub(crate) fn format_elapsed(secs: i64) -> String {
     if secs >= 3600 {
         format!("{}h{}m", secs / 3600, (secs % 3600) / 60)

@@ -1,4 +1,4 @@
-//! claudepowerline — a Claude Code statusline, ported from `statusline.nu`.
+//! claudepowerline — a Claude Code statusline written in Rust.
 //!
 //! The impure work (env, git, filesystem, clock, network) lives in `gather`;
 //! turning the resolved [`StatusData`] into the final ANSI string lives in the

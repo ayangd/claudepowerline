@@ -1,6 +1,6 @@
-//! ANSI palette + nerd-font icons + bar geometry, ported from statusline.nu.
+//! ANSI palette + nerd-font icons + bar geometry.
 
-// Foreground colors (Nushell `ansi` names noted alongside).
+// Foreground colors (ANSI names noted alongside).
 pub(crate) const RESET: &str = "\x1b[0m";
 pub(crate) const BOLD: &str = "\x1b[1m"; // attr_bold
 pub(crate) const DIM: &str = "\x1b[2m"; // attr_dimmed

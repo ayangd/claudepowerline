@@ -1,9 +1,9 @@
 use serde::Deserialize;
 
-/// Mirrors the subset of Claude Code's status-line JSON that the original
-/// `statusline.nu` reads from stdin. Every field is optional: a missing key or
-/// an explicit `null` both deserialize to `None`, so first-boot payloads (which
-/// send some fields as `null`) parse cleanly instead of failing the whole line.
+/// The subset of Claude Code's status-line JSON we read from stdin. Every field
+/// is optional: a missing key or an explicit `null` both deserialize to `None`, so
+/// first-boot payloads (which send some fields as `null`) parse cleanly instead of
+/// failing the whole line.
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 pub(crate) struct Input {
