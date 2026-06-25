@@ -28,6 +28,7 @@ pub(crate) const ICON_TIME: &str = "󱑆";
 pub(crate) const ICON_USAGE: &str = "󰄪";
 pub(crate) const ICON_GIT: &str = "󰘬";
 pub(crate) const ICON_RESET: &str = "󱫤";
+pub(crate) const ICON_RESP: &str = "󱎫";
 
 /// Progress-bar width in cells.
 pub(crate) const BAR_WIDTH: usize = 20;

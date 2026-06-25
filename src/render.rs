@@ -3,6 +3,14 @@
 use crate::data::StatusData;
 use crate::theme;
 
+/// The status-line renderer strips *all* leading whitespace (ASCII and NBSP), so
+/// the percentile line begins with a visible dim continuation marker (not
+/// stripped), then non-breaking spaces sized to put `p75` under `avg`. The gap
+/// mirrors line 1's `" resp  "` (7 columns); the marker shares the resp icon's
+/// East-Asian "ambiguous" width class, so they occupy the same column count.
+const RESP_CONT: &str = "\u{21b3}";
+const RESP_INDENT: &str = "\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}";
+
 /// Cell counts `(full, partial, empty)` for a `width`-cell bar at `pct` percent.
 /// Each cell is 8 vertical sub-steps; `partial` is 0 (no partial cell) or the
 /// braille level index 1..=7. Input is clamped so an over-100% value can't
@@ -113,7 +121,45 @@ pub fn render(data: &StatusData) -> String {
         ));
     }
 
-    // Line 2: context bar + tokens — always shown; absent data renders muted
+    // Lines 2-3: agent response latency (avg + last; percentiles indented).
+    if let Some(r) = &data.resp {
+        out.push_str(&format!(
+            "\n{yellow}{ir} resp{reset}  {white}avg {avg} x{count} · last {last}{reset}",
+            yellow = theme::YELLOW,
+            ir = theme::ICON_RESP,
+            reset = theme::RESET,
+            white = theme::WHITE,
+            avg = r.avg,
+            count = r.count,
+            last = r.last,
+        ));
+        out.push_str(&format!(
+            "\n{dim}{cont}{indent}p75 {p75} · p90 {p90} · p95 {p95}{reset}",
+            dim = theme::DIM,
+            cont = RESP_CONT,
+            indent = RESP_INDENT,
+            reset = theme::RESET,
+            p75 = r.p75,
+            p90 = r.p90,
+            p95 = r.p95,
+        ));
+    } else {
+        out.push_str(&format!(
+            "\n{dim}{ir} resp  avg — · last —{reset}",
+            dim = theme::DIM,
+            ir = theme::ICON_RESP,
+            reset = theme::RESET,
+        ));
+        out.push_str(&format!(
+            "\n{dim}{cont}{indent}p75 — · p90 — · p95 —{reset}",
+            dim = theme::DIM,
+            cont = RESP_CONT,
+            indent = RESP_INDENT,
+            reset = theme::RESET,
+        ));
+    }
+
+    // Context bar + tokens — always shown; absent data renders muted
     // (empty bar + `—`) rather than a fabricated `0%`.
     let (cc, cbar) = match data.context_used {
         Some(used) => {
@@ -145,7 +191,7 @@ pub fn render(data: &StatusData) -> String {
         it = theme::ICON_TOKENS,
     ));
 
-    // Lines 3-4: usage window, when present.
+    // Usage window, when present.
     if let Some(u) = &data.usage {
         out.push_str(&usage_line("5h", u.five_hour, &u.reset_5h));
         out.push_str(&usage_line("7d", u.seven_day, &u.reset_7d));

@@ -6,7 +6,7 @@ use crate::data::StatusData;
 use crate::git::git_branch;
 use crate::input::Input;
 use crate::text::{format_model, format_tokens, shorten_cwd};
-use crate::transcript::transcript_times;
+use crate::transcript::transcript_stats;
 use crate::usage::gather_usage;
 
 /// Resolve everything `render` needs from a parsed [`Input`]: model string,
@@ -48,14 +48,15 @@ fn gather(input: &Input) -> StatusData {
         }
     });
 
-    let (time_elapsed, last_msg) = transcript_times(input.transcript_path.as_deref());
+    let stats = transcript_stats(input.transcript_path.as_deref());
 
     StatusData {
         model,
         cwd,
         branch,
-        time_elapsed,
-        last_msg,
+        time_elapsed: stats.elapsed,
+        last_msg: stats.last_msg,
+        resp: stats.resp,
         context_used,
         tokens,
         usage: gather_usage(),

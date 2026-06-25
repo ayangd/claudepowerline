@@ -16,6 +16,6 @@ mod theme;
 mod transcript;
 mod usage;
 
-pub use data::{StatusData, UsageData};
+pub use data::{ResponseStats, StatusData, UsageData};
 pub use gather::gather_from_json;
 pub use render::render;

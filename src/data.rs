@@ -10,6 +10,9 @@ pub struct StatusData {
     pub time_elapsed: String,
     /// Empty when there is no transcript / last message.
     pub last_msg: String,
+    /// Agent response-time stats (any trigger → next reply); `None` until there
+    /// is at least one completed response.
+    pub resp: Option<ResponseStats>,
     /// Context-window usage percentage (0..100); `None` when not yet known
     /// (e.g. first boot) — the renderer shows an empty bar, not a fake `0%`.
     pub context_used: Option<f64>,
@@ -27,4 +30,15 @@ pub struct UsageData {
     pub seven_day: f64,
     pub reset_5h: String,
     pub reset_7d: String,
+}
+
+/// Agent response-time stats, all durations pre-formatted.
+#[derive(Debug, Default, Clone)]
+pub struct ResponseStats {
+    pub avg: String,
+    pub p75: String,
+    pub p90: String,
+    pub p95: String,
+    pub last: String,
+    pub count: u32,
 }
