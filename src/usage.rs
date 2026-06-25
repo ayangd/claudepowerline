@@ -5,6 +5,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 use crate::data::UsageData;
+use crate::platform;
 use crate::text::fmt_relative;
 
 /// Anthropic OAuth usage API response (only the fields we read).
@@ -118,7 +119,7 @@ fn fetch_usage(home: &str) -> Option<UsageCache> {
 /// Fresh cache → use it; otherwise fetch (refreshing the cache), falling back to
 /// a stale cache on any failure. `None` hides the usage rows.
 pub(crate) fn gather_usage() -> Option<UsageData> {
-    let home = std::env::var("HOME").ok()?;
+    let home = platform::home_dir()?;
     let cache_path = std::path::Path::new(&home).join(".claude/cache/usage-window.json");
 
     let fresh = cache_age_secs(&cache_path).is_some_and(|age| age < USAGE_CACHE_MAX_AGE_SECS);

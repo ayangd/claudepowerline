@@ -10,6 +10,7 @@ mod data;
 mod gather;
 mod git;
 mod input;
+mod platform;
 mod render;
 mod text;
 mod theme;

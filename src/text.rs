@@ -2,6 +2,8 @@
 
 use chrono::{DateTime, Utc};
 
+use crate::platform;
+
 /// Uppercase the first character and lowercase the rest.
 fn capitalize(s: &str) -> String {
     let mut chars = s.chars();
@@ -52,7 +54,7 @@ pub(crate) fn shorten_cwd(raw_cwd: &str, home: &str, max: usize) -> String {
     };
 
     if cwd.chars().count() > max {
-        let parts: Vec<&str> = cwd.split('/').collect();
+        let parts: Vec<&str> = cwd.split(platform::PATH_SEPARATORS).collect();
         let n = parts.len();
         if n > 3 {
             let mut head = 1usize;
@@ -151,6 +153,19 @@ mod tests {
         // 31 chars after tilde → grows past 30, then backs off one step.
         assert_eq!(
             shorten_cwd("/home/u/aaaa/bbbb/cccc/dddd/eeee/ffff", "/home/u", 30),
+            "~/aaaa/bbbb/cccc/…/eeee/ffff"
+        );
+    }
+
+    #[test]
+    fn cwd_windows_path_truncated() {
+        // Backslash-separated paths shorten too (the split accepts both seps).
+        assert_eq!(
+            shorten_cwd(
+                r"C:\Users\u\aaaa\bbbb\cccc\dddd\eeee\ffff",
+                r"C:\Users\u",
+                30
+            ),
             "~/aaaa/bbbb/cccc/…/eeee/ffff"
         );
     }

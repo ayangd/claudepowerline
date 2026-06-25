@@ -5,6 +5,7 @@
 use crate::data::StatusData;
 use crate::git::git_branch;
 use crate::input::Input;
+use crate::platform;
 use crate::text::{format_model, format_tokens, shorten_cwd};
 use crate::transcript::transcript_stats;
 use crate::usage::gather_usage;
@@ -13,7 +14,7 @@ use crate::usage::gather_usage;
 /// shortened cwd, git branch, token counts, transcript times, and the usage
 /// window.
 fn gather(input: &Input) -> StatusData {
-    let home = std::env::var("HOME").unwrap_or_default();
+    let home = platform::home_dir().unwrap_or_default();
 
     let model = format_model(
         input
