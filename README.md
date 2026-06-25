@@ -38,6 +38,8 @@ Golden snapshots live in `tests/golden/`; refresh them with
 
 ## Install
 
+### Nix (Linux / macOS)
+
 ```bash
 nix build "path:$PWD#default"   # builds ./result (a GC-rooted symlink)
 
@@ -51,6 +53,24 @@ jq --arg cmd "$PWD/result/bin/claudepowerline" \
 `result` tracks your latest build, so re-running `nix build "path:$PWD#default"` after a
 change updates the live status line. To revert, point `statusLine.command` back at your
 previous script.
+
+### Windows
+
+No Nix — build with [rustup](https://rustup.rs/) and point `settings.json` at the
+`.exe`. Needs Git for Windows on `PATH` and a Nerd Font terminal (e.g. Windows
+Terminal). From the repo in PowerShell:
+
+```powershell
+cargo build --release
+$cmd = (Resolve-Path .\target\release\claudepowerline.exe).Path
+$f   = "$env:USERPROFILE\.claude\settings.json"
+$j   = Get-Content $f -Raw | ConvertFrom-Json
+$j | Add-Member statusLine ([pscustomobject]@{ type = 'command'; command = $cmd; padding = 0 }) -Force
+$j | ConvertTo-Json -Depth 32 | Set-Content $f
+```
+
+PowerShell's `ConvertTo-Json` rewrites the whole file (jq preserves formatting
+better), so back up `settings.json` first if its layout matters to you.
 
 ## Side effects
 
