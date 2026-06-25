@@ -10,9 +10,11 @@ pub struct StatusData {
     pub time_elapsed: String,
     /// Empty when there is no transcript / last message.
     pub last_msg: String,
-    /// Context-window usage percentage (0..100).
-    pub context_used: f64,
-    pub tokens: String,
+    /// Context-window usage percentage (0..100); `None` when not yet known
+    /// (e.g. first boot) — the renderer shows an empty bar, not a fake `0%`.
+    pub context_used: Option<f64>,
+    /// Formatted `in+out K / limit K`; `None` when the counts aren't known.
+    pub tokens: Option<String>,
     /// `None` hides the usage rows entirely.
     pub usage: Option<UsageData>,
 }

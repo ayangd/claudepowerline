@@ -58,8 +58,8 @@ fn full_fixture() -> StatusData {
         branch: "main".into(),
         time_elapsed: "5m30s".into(),
         last_msg: "17:05".into(),
-        context_used: 42.0,
-        tokens: "128K/1000K".into(),
+        context_used: Some(42.0),
+        tokens: Some("128K/1000K".into()),
         usage: Some(UsageData {
             five_hour: 30.0,
             seven_day: 55.0,
@@ -84,8 +84,8 @@ fn golden_high_thresholds() {
         branch: "release/2026-06".into(),
         time_elapsed: "1h2m".into(),
         last_msg: "09:13".into(),
-        context_used: 85.0,
-        tokens: "170K/200K".into(),
+        context_used: Some(85.0),
+        tokens: Some("170K/200K".into()),
         usage: Some(UsageData {
             five_hour: 92.0,
             seven_day: 65.0,
@@ -105,11 +105,28 @@ fn golden_minimal() {
         branch: String::new(),
         time_elapsed: "0s".into(),
         last_msg: String::new(),
-        context_used: 5.0,
-        tokens: "0K/1000K".into(),
+        context_used: Some(5.0),
+        tokens: Some("0K/1000K".into()),
         usage: None,
     };
     check_golden("minimal", &data);
+}
+
+#[test]
+fn golden_first_boot() {
+    // First session boot: context numbers not known yet → empty bar + `—`
+    // readouts, but line 2 stays visible.
+    let data = StatusData {
+        model: "Opus 4.8".into(),
+        cwd: "~/projects/claudepowerline".into(),
+        branch: "main".into(),
+        time_elapsed: "0s".into(),
+        last_msg: String::new(),
+        context_used: None,
+        tokens: None,
+        usage: None,
+    };
+    check_golden("first_boot", &data);
 }
 
 #[test]

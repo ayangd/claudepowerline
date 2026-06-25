@@ -113,24 +113,36 @@ pub fn render(data: &StatusData) -> String {
         ));
     }
 
-    // Line 2: context bar + tokens.
-    let (cc, cbg) = level_colors(data.context_used);
-    let cbar = make_bar(
-        data.context_used,
-        theme::BAR_WIDTH,
-        cc,
-        cbg,
-        theme::BG_TRACK,
-    );
-    let pct = data.context_used.round() as i64;
+    // Line 2: context bar + tokens — always shown; absent data renders muted
+    // (empty bar + `—`) rather than a fabricated `0%`.
+    let (cc, cbar) = match data.context_used {
+        Some(used) => {
+            let (c, bg) = level_colors(used);
+            (c, make_bar(used, theme::BAR_WIDTH, c, bg, theme::BG_TRACK))
+        }
+        None => (
+            theme::DIM,
+            make_bar(
+                0.0,
+                theme::BAR_WIDTH,
+                theme::DIM,
+                theme::BG_TRACK,
+                theme::BG_TRACK,
+            ),
+        ),
+    };
+    let pct = match data.context_used {
+        Some(used) => format!("{:>3}", used.round() as i64),
+        None => format!("{:>3}", "—"),
+    };
+    let tokens = data.tokens.as_deref().unwrap_or("—");
     out.push_str(&format!(
-        "\n{cc}{ic} ctx {cbar} {white}{pct:>3}%{reset} {cyan}{it} {tokens}{reset}",
+        "\n{cc}{ic} ctx {cbar} {white}{pct}%{reset} {cyan}{it} {tokens}{reset}",
         ic = theme::ICON_CONTEXT,
         white = theme::WHITE,
         reset = theme::RESET,
         cyan = theme::CYAN,
         it = theme::ICON_TOKENS,
-        tokens = data.tokens,
     ));
 
     // Lines 3-4: usage window, when present.

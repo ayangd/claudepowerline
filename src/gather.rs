@@ -16,8 +16,16 @@ fn gather(input: &Input) -> StatusData {
     let home = std::env::var("HOME").unwrap_or_default();
 
     let model = format_model(
-        input.effort.level.as_deref().unwrap_or(""),
-        input.model.display_name.as_deref().unwrap_or("Unknown"),
+        input
+            .effort
+            .as_ref()
+            .and_then(|e| e.level.as_deref())
+            .unwrap_or(""),
+        input
+            .model
+            .as_ref()
+            .and_then(|m| m.display_name.as_deref())
+            .unwrap_or("Unknown"),
     );
 
     // Keep the real path for git; show a tilde'd, shortened one.
@@ -25,11 +33,20 @@ fn gather(input: &Input) -> StatusData {
     let cwd = shorten_cwd(&raw_cwd, &home, 30);
     let branch = git_branch(&raw_cwd);
 
-    let cw = &input.context_window;
-    let tokens = format_tokens(
-        cw.total_input_tokens + cw.total_output_tokens,
-        cw.context_window_size,
-    );
+    // Context numbers are absent on first boot; keep them `None` (the renderer
+    // shows an empty bar) rather than faking a `0%` / `0K`.
+    let cw = input.context_window.as_ref();
+    let context_used = cw.and_then(|c| c.used_percentage);
+    let tokens = cw.and_then(|c| {
+        match (
+            c.total_input_tokens,
+            c.total_output_tokens,
+            c.context_window_size,
+        ) {
+            (Some(i), Some(o), Some(s)) => Some(format_tokens(i + o, s)),
+            _ => None,
+        }
+    });
 
     let (time_elapsed, last_msg) = transcript_times(input.transcript_path.as_deref());
 
@@ -39,7 +56,7 @@ fn gather(input: &Input) -> StatusData {
         branch,
         time_elapsed,
         last_msg,
-        context_used: cw.used_percentage,
+        context_used,
         tokens,
         usage: gather_usage(),
     }
