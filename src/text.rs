@@ -109,7 +109,7 @@ pub(crate) fn format_elapsed(secs: i64) -> String {
 }
 
 /// Format a reset timestamp (Unix epoch seconds) as a relative countdown
-/// `Dd Hh` / `Hh Mm` / `Mm`, `now` if already elapsed, or empty for
+/// `Dd Hh` / `Hh Mm` / `Mm Ss` / `Ss`, `now` if already elapsed, or empty for
 /// absent/unrepresentable input.
 pub(crate) fn fmt_relative(ts: Option<i64>, now: DateTime<Utc>) -> String {
     let Some(reset) = ts.and_then(|t| DateTime::from_timestamp(t, 0)) else {
@@ -119,13 +119,20 @@ pub(crate) fn fmt_relative(ts: Option<i64>, now: DateTime<Utc>) -> String {
     if diff <= 0 {
         return "now".to_string();
     }
-    let (d, h, m) = (diff / 86400, (diff % 86400) / 3600, (diff % 3600) / 60);
+    let (d, h, m, s) = (
+        diff / 86400,
+        (diff % 86400) / 3600,
+        (diff % 3600) / 60,
+        diff % 60,
+    );
     if d > 0 {
         format!("{d}d{h}h")
     } else if h > 0 {
         format!("{h}h{m}m")
+    } else if m > 0 {
+        format!("{m}m{s}s")
     } else {
-        format!("{m}m")
+        format!("{s}s")
     }
 }
 
@@ -198,7 +205,9 @@ mod tests {
         assert_eq!(fmt_relative(Some(i64::MAX), now), ""); // unrepresentable
         assert_eq!(at(-60), "now"); // already elapsed
         assert_eq!(at(0), "now"); // exactly now
-        assert_eq!(at(45 * 60), "45m");
+        assert_eq!(at(42), "42s");
+        assert_eq!(at(45 * 60), "45m0s");
+        assert_eq!(at(45 * 60 + 12), "45m12s");
         assert_eq!(at(2 * 3600 + 30 * 60), "2h30m");
         assert_eq!(at(3 * 86400 + 4 * 3600), "3d4h");
     }
