@@ -1,7 +1,7 @@
 //! Elapsed / last-message times and agent-response-latency stats from the
 //! transcript JSONL (impure — reads a file and uses the local clock).
 
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset, Local, Utc};
 use serde::Deserialize;
 
 use crate::data::ResponseStats;
@@ -21,6 +21,9 @@ pub(crate) struct TranscriptStats {
     pub(crate) elapsed: String,
     /// Local `HH:MM` of the last message (empty when unknown).
     pub(crate) last_msg: String,
+    /// Time since the last message (`format_elapsed` buckets, clamped ≥0;
+    /// empty when unknown).
+    pub(crate) last_msg_ago: String,
     /// Agent response-time stats; `None` when there are no completed responses.
     pub(crate) resp: Option<ResponseStats>,
 }
@@ -31,6 +34,7 @@ impl TranscriptStats {
         Self {
             elapsed: "0s".to_string(),
             last_msg: String::new(),
+            last_msg_ago: String::new(),
             resp: None,
         }
     }
@@ -117,9 +121,12 @@ pub(crate) fn transcript_stats(transcript_path: Option<&str>) -> TranscriptStats
     let elapsed_sec = (last - first).num_seconds().max(0);
     let secs: Vec<(bool, i64)> = events.iter().map(|&(a, dt)| (a, dt.timestamp())).collect();
 
+    let ago_sec = Utc::now().signed_duration_since(last).num_seconds().max(0);
+
     TranscriptStats {
         elapsed: format_elapsed(elapsed_sec),
         last_msg: last.with_timezone(&Local).format("%H:%M").to_string(),
+        last_msg_ago: format_elapsed(ago_sec),
         resp: response_stats(&response_latencies(&secs)),
     }
 }

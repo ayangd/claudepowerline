@@ -58,6 +58,7 @@ fn full_fixture() -> StatusData {
         branch: "main".into(),
         time_elapsed: "5m30s".into(),
         last_msg: "17:05".into(),
+        last_msg_ago: "32s".into(),
         resp: Some(ResponseStats {
             avg: "14s".into(),
             p75: "20s".into(),
@@ -92,6 +93,7 @@ fn golden_high_thresholds() {
         branch: "release/2026-06".into(),
         time_elapsed: "1h2m".into(),
         last_msg: "09:13".into(),
+        last_msg_ago: "4m2s".into(),
         resp: Some(ResponseStats {
             avg: "20s".into(),
             p75: "30s".into(),
@@ -121,6 +123,7 @@ fn golden_minimal() {
         branch: String::new(),
         time_elapsed: "0s".into(),
         last_msg: String::new(),
+        last_msg_ago: String::new(),
         resp: None,
         context_used: Some(5.0),
         tokens: Some("0K/1000K".into()),
@@ -139,6 +142,7 @@ fn golden_first_boot() {
         branch: "main".into(),
         time_elapsed: "0s".into(),
         last_msg: String::new(),
+        last_msg_ago: String::new(),
         resp: None,
         context_used: None,
         tokens: None,

@@ -1,4 +1,4 @@
-[1m[94m󰚩 High Sonnet 4.6[0m [96m󰉋 ~/work/api[0m [95m󰘬 release/2026-06[0m [93m󱑆 1h2m[0m [2m後 09:13[0m
+[1m[94m󰚩 High Sonnet 4.6[0m [96m󰉋 ~/work/api[0m [95m󰘬 release/2026-06[0m [93m󱑆 1h2m[0m [2m後 09:13 距 4m2s[0m
 [93m󱎫 resp[0m  [37mavg 20s x50 · last 8s[0m
 [2m↳       p75 30s · p90 55s · p95 1m10s[0m
 [91m󰘚 ctx [91m[48;5;52m⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿[48;5;236m   [0m [37m 85%[0m [96m󰦨 170K/200K[0m

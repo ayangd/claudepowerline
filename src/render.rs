@@ -114,10 +114,11 @@ pub fn render(data: &StatusData) -> String {
     ));
     if !data.last_msg.is_empty() {
         out.push_str(&format!(
-            " {dim}後 {last}{reset}",
+            " {dim}後 {last} 距 {ago}{reset}",
             dim = theme::DIM,
             reset = theme::RESET,
             last = data.last_msg,
+            ago = data.last_msg_ago,
         ));
     }
 

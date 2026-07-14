@@ -10,6 +10,8 @@ pub struct StatusData {
     pub time_elapsed: String,
     /// Empty when there is no transcript / last message.
     pub last_msg: String,
+    /// Time since the last message; empty when there is no last message.
+    pub last_msg_ago: String,
     /// Agent response-time stats (any trigger → next reply); `None` until there
     /// is at least one completed response.
     pub resp: Option<ResponseStats>,

@@ -74,6 +74,7 @@ fn gather(input: &Input) -> StatusData {
         branch,
         time_elapsed: stats.elapsed,
         last_msg: stats.last_msg,
+        last_msg_ago: stats.last_msg_ago,
         resp: stats.resp,
         context_used,
         tokens,
