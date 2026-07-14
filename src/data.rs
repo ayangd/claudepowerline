@@ -20,8 +20,22 @@ pub struct StatusData {
     pub context_used: Option<f64>,
     /// Formatted `in+out K / limit K`; `None` when the counts aren't known.
     pub tokens: Option<String>,
+    /// Cache composition of the current context; `None` renders `—`
+    /// placeholders (unknown before the first API call and after `/compact`).
+    pub cache: Option<CacheUsage>,
     /// `None` hides the usage rows entirely.
     pub usage: Option<UsageData>,
+}
+
+/// Current-context cache composition: pre-formatted read/write/fresh token
+/// counts; `write_share` (0..100, write / (read+write+fresh)) drives the
+/// 寫-emphasis color in the renderer.
+#[derive(Debug, Default, Clone)]
+pub struct CacheUsage {
+    pub read: String,
+    pub write: String,
+    pub fresh: String,
+    pub write_share: f64,
 }
 
 /// 5h / 7d usage-window utilization, with pre-formatted reset countdowns

@@ -11,6 +11,12 @@ use crate::theme;
 const RESP_CONT: &str = "\u{21b3}";
 const RESP_INDENT: &str = "\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}\u{a0}";
 
+/// Write-share (%) thresholds for the cache segment's 寫 emphasis. Deliberately
+/// lower than `level_colors`' 60/80: a quarter of the input being re-cached is
+/// already unusual, and past half it's a cache break.
+const WRITE_WARN: f64 = 25.0;
+const WRITE_HOT: f64 = 50.0;
+
 /// Cell counts `(full, partial, empty)` for a `width`-cell bar at `pct` percent.
 /// Each cell is 8 vertical sub-steps; `partial` is 0 (no partial cell) or the
 /// braille level index 1..=7. Input is clamped so an over-100% value can't
@@ -190,6 +196,29 @@ pub fn render(data: &StatusData) -> String {
         reset = theme::RESET,
         cyan = theme::CYAN,
         it = theme::ICON_TOKENS,
+    ));
+
+    // Cache composition (read/write/fresh); 寫 alone lights up on a big write.
+    // Absent composition renders as `—`s, mirroring the ctx bar's placeholders.
+    let (read, write, fresh, wc) = match &data.cache {
+        Some(cu) => (
+            cu.read.as_str(),
+            cu.write.as_str(),
+            cu.fresh.as_str(),
+            if cu.write_share > WRITE_HOT {
+                theme::RED
+            } else if cu.write_share > WRITE_WARN {
+                theme::ORANGE
+            } else {
+                theme::DIM
+            },
+        ),
+        None => ("—", "—", "—", theme::DIM),
+    };
+    out.push_str(&format!(
+        " {dim}󰃨 讀{read} · {reset}{wc}寫{write}{reset}{dim} · 新{fresh}{reset}",
+        dim = theme::DIM,
+        reset = theme::RESET,
     ));
 
     // Usage window, when present.

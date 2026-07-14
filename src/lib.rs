@@ -15,6 +15,6 @@ mod text;
 mod theme;
 mod transcript;
 
-pub use data::{ResponseStats, StatusData, UsageData};
+pub use data::{CacheUsage, ResponseStats, StatusData, UsageData};
 pub use gather::gather_from_json;
 pub use render::render;

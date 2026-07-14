@@ -51,6 +51,18 @@ pub(crate) struct ContextWindow {
     pub(crate) total_input_tokens: Option<u64>,
     pub(crate) total_output_tokens: Option<u64>,
     pub(crate) context_window_size: Option<u64>,
+    pub(crate) current_usage: Option<CurrentUsage>,
+}
+
+/// Cache composition of the current context, from the last API response.
+/// Claude Code sends this as `null` before the first API call and after
+/// `/compact`. `output_tokens` also exists in the payload but is unused here.
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub(crate) struct CurrentUsage {
+    pub(crate) input_tokens: Option<u64>,
+    pub(crate) cache_creation_input_tokens: Option<u64>,
+    pub(crate) cache_read_input_tokens: Option<u64>,
 }
 
 #[cfg(test)]
@@ -67,7 +79,8 @@ mod tests {
                 "used_percentage": null,
                 "total_input_tokens": null,
                 "total_output_tokens": null,
-                "context_window_size": null
+                "context_window_size": null,
+                "current_usage": null
             },
             "cwd": null,
             "transcript_path": null,
@@ -79,6 +92,20 @@ mod tests {
         let cw = input.context_window.expect("object present");
         assert!(cw.used_percentage.is_none());
         assert!(cw.context_window_size.is_none());
+        assert!(cw.current_usage.is_none());
+
+        // current_usage with null members also parses.
+        let input: Input = serde_json::from_str(
+            r#"{"context_window": {"current_usage": {"input_tokens": null,
+                "cache_creation_input_tokens": null, "cache_read_input_tokens": null}}}"#,
+        )
+        .expect("null current-usage fields must parse");
+        let cu = input
+            .context_window
+            .and_then(|c| c.current_usage)
+            .expect("object present");
+        assert!(cu.input_tokens.is_none());
+        assert!(cu.cache_read_input_tokens.is_none());
 
         // A null context_window object and an empty payload also parse.
         assert!(serde_json::from_str::<Input>(r#"{"context_window":null}"#).is_ok());

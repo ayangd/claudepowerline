@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use claudepowerline::{ResponseStats, StatusData, UsageData, render};
+use claudepowerline::{CacheUsage, ResponseStats, StatusData, UsageData, render};
 
 fn golden_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/golden")
@@ -69,6 +69,12 @@ fn full_fixture() -> StatusData {
         }),
         context_used: Some(42.0),
         tokens: Some("128K/1000K".into()),
+        cache: Some(CacheUsage {
+            read: "82K".into(),
+            write: "5K".into(),
+            fresh: "9K".into(),
+            write_share: 5.2,
+        }),
         usage: Some(UsageData {
             five_hour: 30.0,
             seven_day: 55.0,
@@ -104,6 +110,12 @@ fn golden_high_thresholds() {
         }),
         context_used: Some(85.0),
         tokens: Some("170K/200K".into()),
+        cache: Some(CacheUsage {
+            read: "2K".into(),
+            write: "160K".into(),
+            fresh: "8K".into(),
+            write_share: 94.1,
+        }),
         usage: Some(UsageData {
             five_hour: 92.0,
             seven_day: 65.0,
@@ -127,6 +139,7 @@ fn golden_minimal() {
         resp: None,
         context_used: Some(5.0),
         tokens: Some("0K/1000K".into()),
+        cache: None,
         usage: None,
     };
     check_golden("minimal", &data);
@@ -146,6 +159,7 @@ fn golden_first_boot() {
         resp: None,
         context_used: None,
         tokens: None,
+        cache: None,
         usage: None,
     };
     check_golden("first_boot", &data);

@@ -4,12 +4,34 @@
 
 use chrono::Utc;
 
-use crate::data::{StatusData, UsageData};
+use crate::data::{CacheUsage, StatusData, UsageData};
 use crate::git::git_branch;
-use crate::input::{Input, RateLimits};
+use crate::input::{CurrentUsage, Input, RateLimits};
 use crate::platform;
-use crate::text::{fmt_relative, format_model, format_tokens, shorten_cwd};
+use crate::text::{fmt_relative, format_count, format_model, format_tokens, shorten_cwd};
 use crate::transcript::transcript_stats;
+
+/// Cache composition from the payload's `current_usage`. All-or-nothing: any
+/// missing field hides the segment — a partial composition would mislead.
+fn gather_cache(usage: Option<&CurrentUsage>) -> Option<CacheUsage> {
+    let u = usage?;
+    let (r, w, f) = (
+        u.cache_read_input_tokens?,
+        u.cache_creation_input_tokens?,
+        u.input_tokens?,
+    );
+    let total = r + w + f;
+    Some(CacheUsage {
+        read: format_count(r),
+        write: format_count(w),
+        fresh: format_count(f),
+        write_share: if total > 0 {
+            w as f64 / total as f64 * 100.0
+        } else {
+            0.0
+        },
+    })
+}
 
 /// Usage window from the payload's `rate_limits` (present for Pro/Max
 /// subscribers after the first API response). Either percentage missing →
@@ -66,6 +88,8 @@ fn gather(input: &Input) -> StatusData {
         }
     });
 
+    let cache = gather_cache(cw.and_then(|c| c.current_usage.as_ref()));
+
     let stats = transcript_stats(input.transcript_path.as_deref());
 
     StatusData {
@@ -78,6 +102,7 @@ fn gather(input: &Input) -> StatusData {
         resp: stats.resp,
         context_used,
         tokens,
+        cache,
         usage: gather_usage(input.rate_limits.as_ref()),
     }
 }

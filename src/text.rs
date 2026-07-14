@@ -25,6 +25,16 @@ pub(crate) fn format_model(effort: &str, name: &str) -> String {
     }
 }
 
+/// Raw count below 1000, K-rounded above (`312` / `82K`) — keeps small
+/// values honest where `0K` would hide them.
+pub(crate) fn format_count(n: u64) -> String {
+    if n < 1000 {
+        n.to_string()
+    } else {
+        format!("{}K", ((n as f64) / 1000.0).round() as i64)
+    }
+}
+
 /// `"{round(total/1000)}K/{round(limit/1000)}K"`.
 pub(crate) fn format_tokens(total: u64, limit: u64) -> String {
     let k = |n: u64| ((n as f64) / 1000.0).round() as i64;
@@ -145,6 +155,16 @@ mod tests {
         assert_eq!(format_model("xhigh", "Opus 4.8"), "Xhigh Opus 4.8");
         assert_eq!(format_model("HIGH", "Opus 4.8"), "High Opus 4.8");
         assert_eq!(format_model("", "Opus 4.8"), "Opus 4.8");
+    }
+
+    #[test]
+    fn count_adaptive_formatting() {
+        assert_eq!(format_count(0), "0");
+        assert_eq!(format_count(999), "999");
+        assert_eq!(format_count(1000), "1K");
+        assert_eq!(format_count(1499), "1K");
+        assert_eq!(format_count(1500), "2K");
+        assert_eq!(format_count(82_000), "82K");
     }
 
     #[test]

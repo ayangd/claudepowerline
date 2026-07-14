@@ -1,4 +1,4 @@
 [1m[94m󰚩 Opus 4.8[0m [96m󰉋 ~/projects/claudepowerline[0m [95m󰘬 main[0m [93m󱑆 0s[0m
 [2m󱎫 resp  avg — · last —[0m
 [2m↳       p75 — · p90 — · p95 —[0m
-[2m󰘚 ctx [48;5;236m                    [0m [37m  —%[0m [96m󰦨 —[0m
+[2m󰘚 ctx [48;5;236m                    [0m [37m  —%[0m [96m󰦨 —[0m [2m󰃨 讀— · [0m[2m寫—[0m[2m · 新—[0m
