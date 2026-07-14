@@ -2,13 +2,30 @@
 //! [`StatusData`]. This is the impure orchestrator: it drives git, the
 //! transcript, and the usage window.
 
-use crate::data::StatusData;
+use chrono::Utc;
+
+use crate::data::{StatusData, UsageData};
 use crate::git::git_branch;
-use crate::input::Input;
+use crate::input::{Input, RateLimits};
 use crate::platform;
-use crate::text::{format_model, format_tokens, shorten_cwd};
+use crate::text::{fmt_relative, format_model, format_tokens, shorten_cwd};
 use crate::transcript::transcript_stats;
-use crate::usage::gather_usage;
+
+/// Usage window from the payload's `rate_limits` (present for Pro/Max
+/// subscribers after the first API response). Either percentage missing →
+/// `None`, hiding the usage rows rather than rendering a fabricated `0%`.
+fn gather_usage(rate_limits: Option<&RateLimits>) -> Option<UsageData> {
+    let rl = rate_limits?;
+    let five = rl.five_hour.as_ref()?;
+    let seven = rl.seven_day.as_ref()?;
+    let now = Utc::now();
+    Some(UsageData {
+        five_hour: five.used_percentage?,
+        seven_day: seven.used_percentage?,
+        reset_5h: fmt_relative(five.resets_at, now),
+        reset_7d: fmt_relative(seven.resets_at, now),
+    })
+}
 
 /// Resolve everything `render` needs from a parsed [`Input`]: model string,
 /// shortened cwd, git branch, token counts, transcript times, and the usage
@@ -60,7 +77,7 @@ fn gather(input: &Input) -> StatusData {
         resp: stats.resp,
         context_used,
         tokens,
-        usage: gather_usage(),
+        usage: gather_usage(input.rate_limits.as_ref()),
     }
 }
 

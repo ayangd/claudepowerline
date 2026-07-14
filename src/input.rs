@@ -12,6 +12,24 @@ pub(crate) struct Input {
     pub(crate) context_window: Option<ContextWindow>,
     pub(crate) cwd: Option<String>,
     pub(crate) transcript_path: Option<String>,
+    pub(crate) rate_limits: Option<RateLimits>,
+}
+
+/// 5h/7d usage windows, sent by Claude Code for Pro/Max subscribers after the
+/// session's first API response; absent otherwise.
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub(crate) struct RateLimits {
+    pub(crate) five_hour: Option<RateWindow>,
+    pub(crate) seven_day: Option<RateWindow>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub(crate) struct RateWindow {
+    pub(crate) used_percentage: Option<f64>,
+    /// Unix epoch seconds.
+    pub(crate) resets_at: Option<i64>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -52,7 +70,8 @@ mod tests {
                 "context_window_size": null
             },
             "cwd": null,
-            "transcript_path": null
+            "transcript_path": null,
+            "rate_limits": null
         }"#;
         let input: Input = serde_json::from_str(json).expect("null fields must parse");
         assert!(input.model.is_none());
@@ -64,5 +83,17 @@ mod tests {
         // A null context_window object and an empty payload also parse.
         assert!(serde_json::from_str::<Input>(r#"{"context_window":null}"#).is_ok());
         assert!(serde_json::from_str::<Input>("{}").is_ok());
+
+        // rate_limits with null windows / null members also parses.
+        let input: Input = serde_json::from_str(
+            r#"{"rate_limits": {"five_hour": null,
+                "seven_day": {"used_percentage": null, "resets_at": null}}}"#,
+        )
+        .expect("null rate-limit fields must parse");
+        let rl = input.rate_limits.expect("object present");
+        assert!(rl.five_hour.is_none());
+        let sd = rl.seven_day.expect("object present");
+        assert!(sd.used_percentage.is_none());
+        assert!(sd.resets_at.is_none());
     }
 }

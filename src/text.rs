@@ -108,16 +108,14 @@ pub(crate) fn format_elapsed(secs: i64) -> String {
     }
 }
 
-/// Format an RFC-3339 reset timestamp as a relative countdown `Dd Hh` / `Hh Mm`
-/// / `Mm`, `now` if already elapsed, or empty for empty/unparseable input.
-pub(crate) fn fmt_relative(ts: &str, now: DateTime<Utc>) -> String {
-    if ts.is_empty() {
-        return String::new();
-    }
-    let Ok(reset) = DateTime::parse_from_rfc3339(ts) else {
+/// Format a reset timestamp (Unix epoch seconds) as a relative countdown
+/// `Dd Hh` / `Hh Mm` / `Mm`, `now` if already elapsed, or empty for
+/// absent/unrepresentable input.
+pub(crate) fn fmt_relative(ts: Option<i64>, now: DateTime<Utc>) -> String {
+    let Some(reset) = ts.and_then(|t| DateTime::from_timestamp(t, 0)) else {
         return String::new();
     };
-    let diff = (reset.with_timezone(&Utc) - now).num_seconds();
+    let diff = (reset - now).num_seconds();
     if diff <= 0 {
         return "now".to_string();
     }
@@ -195,13 +193,13 @@ mod tests {
         let now = DateTime::parse_from_rfc3339("2026-06-25T12:00:00Z")
             .unwrap()
             .with_timezone(&Utc);
-        let at = |s: &str| fmt_relative(s, now);
-        assert_eq!(at(""), "");
-        assert_eq!(at("garbage"), "");
-        assert_eq!(at("2026-06-25T11:59:00Z"), "now"); // already elapsed
-        assert_eq!(at("2026-06-25T12:00:00Z"), "now"); // exactly now
-        assert_eq!(at("2026-06-25T12:45:00Z"), "45m");
-        assert_eq!(at("2026-06-25T14:30:00Z"), "2h30m");
-        assert_eq!(at("2026-06-28T16:00:00Z"), "3d4h");
+        let at = |offset_secs: i64| fmt_relative(Some(now.timestamp() + offset_secs), now);
+        assert_eq!(fmt_relative(None, now), "");
+        assert_eq!(fmt_relative(Some(i64::MAX), now), ""); // unrepresentable
+        assert_eq!(at(-60), "now"); // already elapsed
+        assert_eq!(at(0), "now"); // exactly now
+        assert_eq!(at(45 * 60), "45m");
+        assert_eq!(at(2 * 3600 + 30 * 60), "2h30m");
+        assert_eq!(at(3 * 86400 + 4 * 3600), "3d4h");
     }
 }
